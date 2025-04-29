@@ -260,7 +260,7 @@ async def main():
     category = data['subreddit'].to_list()
 
     
-    assert len(system_prompts)==len(data)==len(query_data)==len(category), "system_prompts와 data, category 길이가 일치해야 합니다."
+    assert len(system_prompts)==len(data)==len(query_data)==len(category), "system_prompts와 data 길이가 일치해야 합니다."
     print('=== 전체 데이터 개수: ', len(system_prompts))
 
     # 4) chunk 단위로 실행 
