@@ -1,9 +1,8 @@
 import argparse
-import asyncio
+import time
 import json
 import os
 import re
-import aiofiles
 
 import random
 import pandas as pd 
@@ -15,13 +14,13 @@ from openai import OpenAI
 # -------------------------
 # 공통 유틸
 # -------------------------
-async def download_batch_results(client, output_file_id, output_file="batch_results.jsonl"):
+def download_batch_results(client, output_file_id, output_file="batch_results.jsonl"):
     """
     배치 결과를 다운로드하여 로컬 파일로 저장
     """
-    response = client.files.content(output_file_id)
-    async with aiofiles.open(output_file, "wb") as f:
-        await f.write(response.content)   # 바이너리 그대로 저장
+    file_response = client.files.content(output_file_id)  # 배치 결과 파일 다운로드
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(file_response.text)
     print(f"✅ 결과 파일 저장: {output_file}")
 
 def sample_examples(data, category_map, target_category, total_samples=3):
@@ -59,7 +58,7 @@ def list_jsonl_files_numeric_sort(directory, prefix="requests_part"):
     """
     all_files = [
         fname for fname in os.listdir(directory)
-        if fname.startswith(prefix) and fname.endswith(".jsonl")
+        if fname.startswith(prefix) and fname.endswith(".jsonl") and "results" not in fname
     ]
     
     def extract_part_index(filename):
@@ -75,7 +74,7 @@ def list_jsonl_files_numeric_sort(directory, prefix="requests_part"):
     )
     return [os.path.join(directory, f) for f in sorted_files]
 
-async def execute_batch(client, input_jsonl_path, stage_name):
+def execute_batch(client, input_jsonl_path, stage_name):
     """
     배치 작업을 실행하고 실패 시 Tenacity로 재시도
     """
@@ -96,7 +95,7 @@ async def execute_batch(client, input_jsonl_path, stage_name):
     print(f"✅ {stage_name} 배치 실행: {batch_id}")
     return batch_id
 
-async def wait_for_batch_completion(client, batch_id, check_interval=30):
+def wait_for_batch_completion(client, batch_id, check_interval=30):
     while True:
         batch_status = client.batches.retrieve(batch_id)
         status = batch_status.status
@@ -113,16 +112,14 @@ async def wait_for_batch_completion(client, batch_id, check_interval=30):
             return None
 
         else:
-            await asyncio.sleep(check_interval)
-
+            time.sleep(check_interval)  # 동기 버전 sleep
 
 # -------------------------
 # Chunk 단위 JSONL 생성 및 배치 실행
 # -------------------------
-async def create_jsonl_in_chunks(
+def create_jsonl_in_chunks(
     system_prompts,
-    query_data,
-    category, 
+    data, 
     output_dir,
     chunk_size,
     max_tokens
@@ -130,9 +127,12 @@ async def create_jsonl_in_chunks(
     """
     data 리스트를 chunk_size 단위로 잘라, 여러 .jsonl 파일을 생성합니다.
     """
-    assert len(system_prompts) == len(query_data) == len(category), "system_prompts와 data 길이가 일치해야 합니다."
 
-    total_data = len(query_data)
+    query_data = data['git abody'].to_list()
+    category = data['subreddit'].to_list()
+
+    assert len(system_prompts) == len(query_data) == len(category), "system_prompts와 query_data, category 길이가 일치해야 합니다."
+    total_data = len(system_prompts)
     total_chunks = ceil(total_data / chunk_size)
 
     for chunk_idx in range(total_chunks):
@@ -141,16 +141,16 @@ async def create_jsonl_in_chunks(
 
         chunk_system_prompts = system_prompts[start:end]
         chunk_queries = query_data[start:end]
-        chunk_categories = category[start:end]
+        assert len(chunk_system_prompts) == len(chunk_queries), "system_prompts와 query_data 청크 길이가 일치해야 합니다."
 
         output_file = os.path.join(output_dir, f"requests_part{chunk_idx}.jsonl")
 
-        async with aiofiles.open(output_file, "w", encoding="utf-8") as f:
-            for pair_idx, (system_prompt, query, category) in enumerate(tqdm(zip(chunk_system_prompts, chunk_queries, chunk_categories), desc=f"Chunk {chunk_idx}", leave=False)):
+        with open(output_file, "w", encoding="utf-8") as f:
+            for pair_idx, (system_prompt, query) in enumerate(tqdm(zip(chunk_system_prompts, chunk_queries), desc=f"Chunk {chunk_idx}", leave=False)):
                 global_idx = start + pair_idx
 
                 request_data = {
-                    "custom_id": f'{category}_{global_idx}',
+                    "custom_id": f"{category[global_idx]}_{global_idx}",
                     "method": "POST",
                     "url": "/v1/chat/completions",
                     "body": {
@@ -162,13 +162,13 @@ async def create_jsonl_in_chunks(
                         "max_tokens": max_tokens
                     }
                 }
-                await f.write(json.dumps(request_data, ensure_ascii=False) + "\n")
+                f.write(json.dumps(request_data, ensure_ascii=False) + "\n")
         
         print(f"✅ JSONL 생성 (Chunk {chunk_idx}): {output_file}")
     
     print("✅ 모든 JSONL Chunks 생성 완료!")
 
-async def process_in_chunks(client, system_prompts, query_data, category, chunk_size, output_dir, max_tokens, resume_from, wait_after_success, retry_attempts, retry_wait):
+def process_in_chunks(client, system_prompts, data, chunk_size, output_dir, max_tokens, resume_from, wait_after_success, retry_attempts, retry_wait):
     """
     1) JSONL을 chunk_size 단위로 생성
     2) 각 JSONL 파일에 대해 배치를 순차 실행
@@ -178,7 +178,7 @@ async def process_in_chunks(client, system_prompts, query_data, category, chunk_
     
     # 1) Chunk별 JSONL 생성
     os.makedirs(output_dir, exist_ok=True)
-    await create_jsonl_in_chunks(system_prompts, query_data, category, output_dir, chunk_size, max_tokens)
+    create_jsonl_in_chunks(system_prompts, data, output_dir, chunk_size, max_tokens)
 
     # 2) 생성된 JSONL 목록
     jsonl_files = list_jsonl_files_numeric_sort(output_dir, prefix="requests_part")
@@ -204,14 +204,14 @@ async def process_in_chunks(client, system_prompts, query_data, category, chunk_
             try:
                 # 배치 실행
                 file_name = os.path.basename(jsonl_file)
-                batch_id = await execute_batch(client, jsonl_file, file_name)
-                output_file_id = await wait_for_batch_completion(client, batch_id)
+                batch_id = execute_batch(client, jsonl_file, file_name)
+                output_file_id = wait_for_batch_completion(client, batch_id)
 
                 if output_file_id is not None:
                     # 결과 다운로드
                     result_file_name = file_name.replace(".jsonl", "_results.jsonl")
                     result_file_path = os.path.join(output_dir, result_file_name)
-                    await download_batch_results(client, output_file_id, result_file_path)
+                    download_batch_results(client, output_file_id, result_file_path)
                     result_paths.append(result_file_path)
                     break  # 다음 배치로 이동 
 
@@ -220,27 +220,27 @@ async def process_in_chunks(client, system_prompts, query_data, category, chunk_
                 print(f"batch가 실패하여 재시도합니다. 남은 재시도 횟수: {retries_left}")
                 if retries_left > 0:
                     print(f'{retry_wait}초 동안 대기합니다 . . .')
-                    await asyncio.sleep(retry_wait)
+                    time.sleep(retry_wait)
 
             except Exception as e:
                 retries_left -= 1
                 print(f"❌ 배치 실행 중 오류 발생: {e}")
                 if retries_left > 0:
                     print(f"배치 {i}를 다시 시도합니다. 남은 재시도 횟수: {retries_left}")
-                    await asyncio.sleep(60)  # 재시도 전 대기
+                    time.sleep(60)  # 재시도 전 대기
                 else:
                     print(f"❌ 배치 {i} 처리 실패. 다음 청크로 이동합니다.")
 
         # 중간 대기(토큰 해소 시간)
         print(f"[Wait] 청크 {i} 처리 후 {wait_after_success}초 대기합니다...")
-        await asyncio.sleep(wait_after_success)
+        time.sleep(wait_after_success)
 
     return result_paths
 
 # -------------------------
 # 메인 실행 함수
 # -------------------------
-async def main():
+def main():
     args = parse_args()
 
     # 1) GPT-4o 클라이언트 초기화
@@ -256,23 +256,19 @@ async def main():
         system_prompts = json.load(f)
 
     data = pd.read_csv(data_path)
-    query_data = data['git abody'].to_list()
-    category = data['subreddit'].to_list()
-
     
-    assert len(system_prompts)==len(data)==len(query_data)==len(category), "system_prompts와 data 길이가 일치해야 합니다."
+    assert len(system_prompts)==len(data), "system_prompts와 data 길이가 일치해야 합니다."
     print('=== 전체 데이터 개수: ', len(system_prompts))
 
     # 4) chunk 단위로 실행 
-    result_paths = await process_in_chunks(
+    result_paths = process_in_chunks(
         client=client,
         system_prompts=system_prompts,
-        query_data=query_data,
-        category=category,
+        data=data,
         chunk_size=500,
         output_dir=result_dir,
         max_tokens=512,
-        resume_from=0,
+        resume_from=1,
         wait_after_success=60,
         retry_attempts=3,
         retry_wait=300
@@ -290,4 +286,4 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
