@@ -38,16 +38,16 @@ def main():
     
     data = pd.read_csv(args.data_path)
     data['response'] = merged_results
-    data = data.rename(columns={'git abody': 'body'})
+    # data = data.rename(columns={'git abody': 'body'})
 
     # 전체 데이터 저장 
-    data.to_csv(args.output_path, index=False)
+    data.to_csv(args.output_path, index=False, encoding="utf-8-sig")
     print(f"✅ 전체 저장 완료: {args.output_path}")
 
     # 일부 데이터 저장 
     selected_indices = list(range(0, 4)) + list(range(1000, 1004)) + list(range(2000, 2004)) + list(range(3000, 3004)) + list(range(4000, 4004))
     selected_rows = data.iloc[selected_indices]
-    selected_rows.to_csv(args.output_path_5, index=False)
+    selected_rows.to_csv(args.output_path_5, index=False, encoding="utf-8-sig")
     print(f"✅ 일부 저장 완료: {args.output_path_5}")
 
 def parse_args():
