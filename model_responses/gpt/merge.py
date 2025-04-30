@@ -52,10 +52,10 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--results_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses/gpt-4o')
+    parser.add_argument('--results_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses/gpt-3.5')
     parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/final_5000.csv')
-    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/gpt4o_result.csv')
-    parser.add_argument('--output_path_5', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/gpt4o_result_5.csv')
+    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt3.5_result.csv')
+    parser.add_argument('--output_path_5', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt3.5_result_5.csv')
     return parser.parse_args()
 
 if __name__ == "__main__":
