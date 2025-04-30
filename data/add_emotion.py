@@ -10,8 +10,6 @@ from math import ceil
 from tqdm import tqdm
 from openai import OpenAI
 
-random.seed(1234)
-
 
 # -------------------------
 # 공통 유틸
@@ -24,34 +22,6 @@ def download_batch_results(client, output_file_id, output_file="batch_results.js
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(file_response.text)
     print(f"✅ 결과 파일 저장: {output_file}")
-
-def sample_examples(data, category_map, target_category, total_samples=3):
-    """
-    예제 반환
-    """
-    if target_category not in category_map:
-        raise ValueError(f"No data found for target category: {target_category}")
-    
-    # 1. 타겟 카테고리에서 하나 선택
-    target_items = category_map[target_category]["items"]
-    if not target_items:
-        raise ValueError(f"No items found for target category: {target_category}")
-    target_sample = random.choice(target_items)
-    
-    # 2. 나머지 카테고리에서 랜덤으로 2개 선택
-    other_categories = [cat for cat in category_map if cat != target_category]
-    other_samples = []
-
-    while len(other_samples) < (total_samples - 1) and other_categories:
-        random_cat = random.choice(other_categories)
-        other_categories.remove(random_cat)
-        items = category_map[random_cat]["items"]
-        if items:
-            other_samples.append(random.choice(items))
-
-    # 3. 예제 조합
-    result = [target_sample] + other_samples
-    return result
 
 def list_jsonl_files_numeric_sort(directory, prefix="requests_part"):
     """
