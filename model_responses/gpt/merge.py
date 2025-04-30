@@ -10,11 +10,11 @@ def main():
 
     merged_results = []
 
-    result_files = [f for f in os.listdir(args.results_path) if f.endswith("_results.jsonl")]
+    result_files = [f for f in os.listdir(args.results_dir) if f.endswith("_results.jsonl")]
     result_files = sorted(result_files, key=lambda x: int(re.search(r'part(\d+)', x).group(1)))
 
     for _result_file in result_files:
-        result_file = os.path.join(args.results_path, _result_file)
+        result_file = os.path.join(args.results_dir, _result_file)
         with open(result_file, "r", encoding="utf-8") as f:
             for line in f:
                 try:
