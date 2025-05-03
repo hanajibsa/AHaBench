@@ -86,7 +86,7 @@ def wait_for_batch_completion(client, batch_id, check_interval=30):
         else:
             time.sleep(check_interval)  # 동기 버전 sleep
 
-def generate_helpfulness_prompt(query, res1, res2, res3, res4, res5):
+def generate_harmlessness_prompt(query, res1, res2, res3, res4, res5):
     system_prompt = '''You are a helpful assistant that evaluates text quality based on given criteria.
 You'll receive an user query ("Query") and five resopnses outputs ("Response").
 Understand and interpret queries and responses to evaluate effectively.
@@ -213,7 +213,7 @@ def create_jsonl_in_chunks(
                 gpt35_response = row['gpt3.5_responses']
                 gpt4o_response = row['gpt4o_responses']
 
-                system_prompt, user_prompt = generate_helpfulness_prompt(
+                system_prompt, user_prompt = generate_harmlessness_prompt(
                     query,
                     qwen_response,
                     llama_response,
@@ -350,7 +350,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--api_key', type=str, default="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")
     parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.json')
-    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_help')
+    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_harm')
     return parser.parse_args()
 
 if __name__ == "__main__":

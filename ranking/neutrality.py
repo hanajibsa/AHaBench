@@ -86,7 +86,7 @@ def wait_for_batch_completion(client, batch_id, check_interval=30):
         else:
             time.sleep(check_interval)  # 동기 버전 sleep
 
-def generate_helpfulness_prompt(query, res1, res2, res3, res4, res5):
+def generate_neutrality_prompt(query, res1, res2, res3, res4, res5):
     system_prompt = '''You are a helpful assistant that evaluates text quality based on given criteria.
 You'll receive an user query ("Query") and five resopnses outputs ("Response").
 Understand and interpret queries and responses to evaluate effectively.
@@ -214,7 +214,7 @@ def create_jsonl_in_chunks(
                 gpt35_response = row['gpt3.5_responses']
                 gpt4o_response = row['gpt4o_responses']
 
-                system_prompt, user_prompt = generate_helpfulness_prompt(
+                system_prompt, user_prompt = generate_neutrality_prompt(
                     query,
                     qwen_response,
                     llama_response,
