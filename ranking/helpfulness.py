@@ -131,34 +131,34 @@ Response:
 
 ### Output
 #### Output for Response 1
-{
+{{
     "Rationale": "Rationale for the rating in short sentencs",
     "Rating": "Rating for response 1"
-}
+}}
 
 #### Output for Response 2
-{
+{{
     "Rationale": "Rationale for the rating in short sentencs",
     "Rating": "Rating for response 2"
-}
+}}
 
 #### Output for Response 3
-{
+{{
     "Rationale": "Rationale for the rating in short sentencs",
     "Rating": "Rating for response 3"
-}
+}}
 
 #### Output for Response 4
-{
+{{
     "Rationale": "Rationale for the rating in short sentencs",
     "Rating": "Rating for response 4"
-}
+}}
 
 #### Output for Response 5
-{
+{{
     "Rationale": "Rationale for the rating in short sentencs",
     "Rating": "Rating for response 5"
-}
+}}
 
 ---
 
@@ -175,12 +175,12 @@ Texts:
 <response 5> {res5}
 
 ### Output'''
+    return system_prompt, user_prompt 
 
 # -------------------------
 # Chunk 단위 JSONL 생성 및 배치 실행
 # -------------------------
 def create_jsonl_in_chunks(
-    emotion_prompts,
     data, 
     output_dir,
     chunk_size,
@@ -209,19 +209,16 @@ def create_jsonl_in_chunks(
         output_file = os.path.join(output_dir, f"requests_part{chunk_idx}.jsonl")
 
         with open(output_file, "w", encoding="utf-8") as f:
-            for pair_idx, data in enumerate(tqdm(chunk_data, desc=f"Chunk {chunk_idx}", leave=False)):
+            for pair_idx, row in enumerate(tqdm(chunk_data, desc=f"Chunk {chunk_idx}", leave=False)):
                 global_idx = start + pair_idx
-                
-                print("data:", data)
-                exit()
 
-                query = data['rephrased_query']
-                category = data['subreddit']
-                qwen_response = data['qwen_responses']
-                llama_response = data['llama_responses']
-                mistral_response = data['mistral_responses']
-                gpt35_response = data['gpt3.5_responses']
-                gpt4o_response = data['gpt4o_responses']
+                query = row['rephrased_query']
+                category = row['subreddit']
+                qwen_response = row['qwen_responses']
+                llama_response = row['llama_responses']
+                mistral_response = row['mistral_responses']
+                gpt35_response = row['gpt3.5_responses']
+                gpt4o_response = row['gpt4o_responses']
 
                 system_prompt, user_prompt = generate_helpfulness_prompt(
                     query,
@@ -252,7 +249,7 @@ def create_jsonl_in_chunks(
     
     print("✅ 모든 JSONL Chunks 생성 완료!")
 
-def process_in_chunks(client, emotion_prompts, data, chunk_size, output_dir, max_tokens, resume_from, wait_after_success, retry_attempts, retry_wait):
+def process_in_chunks(client, data, chunk_size, output_dir, max_tokens, resume_from, wait_after_success, retry_attempts, retry_wait):
     """
     1) JSONL을 chunk_size 단위로 생성
     2) 각 JSONL 파일에 대해 배치를 순차 실행
@@ -262,7 +259,7 @@ def process_in_chunks(client, emotion_prompts, data, chunk_size, output_dir, max
     
     # 1) Chunk별 JSONL 생성
     os.makedirs(output_dir, exist_ok=True)
-    create_jsonl_in_chunks(emotion_prompts, data, output_dir, chunk_size, max_tokens)
+    create_jsonl_in_chunks(data, output_dir, chunk_size, max_tokens)
 
     # 2) 생성된 JSONL 목록
     jsonl_files = list_jsonl_files_numeric_sort(output_dir, prefix="requests_part")
@@ -331,22 +328,18 @@ def main():
     client = OpenAI(api_key=args.api_key)
 
     # 2) 경로 설정 
-    prompt_path = args.prompt_path
     data_path = args.data_path
     result_dir = args.result_dir
 
     # 3) 데이터 설정 
-    with open(prompt_path, 'r') as f:
-        emotion_prompts = json.load(f)
-
-    data = pd.read_csv(data_path)
+    with open(data_path, 'r') as f:
+        data = json.load(f)
     
     print('=== 전체 데이터 개수: ', len(data))
 
     # 4) chunk 단위로 실행 
     result_paths = process_in_chunks(
         client=client,
-        emotion_prompts=emotion_prompts,
         data=data,
         chunk_size=500,
         output_dir=result_dir,
@@ -363,8 +356,7 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--api_key', type=str, default="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")
-    parser.add_argument('--prompt_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/emotional_prompts.json')
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.csv')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.json')
     parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_help')
     return parser.parse_args()
 
