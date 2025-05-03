@@ -128,7 +128,7 @@ def create_jsonl_in_chunks(
     data 리스트를 chunk_size 단위로 잘라, 여러 .jsonl 파일을 생성합니다.
     """
 
-    query_data = data['git abody'].to_list()
+    query_data = data['rephrased_query'].to_list()
     category = data['subreddit'].to_list()
 
     assert len(system_prompts) == len(query_data) == len(category), "system_prompts와 query_data, category 길이가 일치해야 합니다."
@@ -281,8 +281,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run GPT-4o batch inference for image pairs.")
     parser.add_argument('--api_key', type=str, default="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")
     parser.add_argument('--prompt_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/system_prompts_5000.json')
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/final_5000.csv')
-    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses/gpt-4o')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/rephrased_query_5000.csv')
+    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/gpt-4o')
     return parser.parse_args()
 
 if __name__ == "__main__":
