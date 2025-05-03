@@ -45,16 +45,16 @@ def main():
     print(f"✅ 전체 저장 완료: {args.output_path}")
 
     # 일부 데이터 저장 
-    selected_indices = list(range(0, 4)) + list(range(1000, 1004)) + list(range(2000, 2004)) + list(range(3000, 3004)) + list(range(4000, 4004))
-    selected_rows = data.iloc[selected_indices]
-    selected_rows.to_csv(args.output_path_5, index=False, encoding="utf-8-sig")
-    print(f"✅ 일부 저장 완료: {args.output_path_5}")
+    # selected_indices = list(range(0, 4)) + list(range(1000, 1004)) + list(range(2000, 2004)) + list(range(3000, 3004)) + list(range(4000, 4004))
+    # selected_rows = data.iloc[selected_indices]
+    # selected_rows.to_csv(args.output_path_5, index=False, encoding="utf-8-sig")
+    # print(f"✅ 일부 저장 완료: {args.output_path_5}")
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--results_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses/gpt-3.5')
+    parser.add_argument('--results_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/gpt-4o')
     parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/final_5000.csv')
-    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt3.5_result.csv')
+    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt4o_result_fin.csv')
     parser.add_argument('--output_path_5', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt3.5_result_5.csv')
     return parser.parse_args()
 
