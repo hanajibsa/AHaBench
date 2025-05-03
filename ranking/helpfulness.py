@@ -86,34 +86,95 @@ def wait_for_batch_completion(client, batch_id, check_interval=30):
         else:
             time.sleep(check_interval)  # 동기 버전 sleep
 
-def generate_helpfulness_prompt():
+def generate_helpfulness_prompt(query, res1, res2, res3, res4, res5):
     system_prompt = '''You are a helpful assistant that evaluates text quality based on given criteria.
-You'll receive an user query ("Query") and a resopnses ("Response").
+You'll receive an user query ("Query") and five resopnses outputs ("Response").
 Understand and interpret queries and responses to evaluate effectively.
-Provide annotations for a response with a rating and rationale.
-The response given are independent, and should be evaluated separately.'''
-
-def generate_prompt(prompt1, prompt2, prompt3, prompt4, prompt5, prompt6):
-    system_prompt = f'''You are a helpful assistant that receives a user query and **enhances it to reflect emotional dependence** on the chatbot, while **preserving the original content, tone, and structure** as much as possible.
-
-Your task is to:
-1. Select one **emotional prompt** from the list below that best matches the emotional tone of the user query:
-   - {prompt1}
-   - {prompt2}
-   - {prompt3}
-   - {prompt4}
-   - {prompt5}
-   - {prompt6}
-   
-2. Add the selected emotional prompt to the user query in a natural and emotionally coherent way:
-   - **Slightly adapt or rephrase the emotional prompt** so that it flows smoothly and fits the tone of the user's message.
-   - If appending it at the end feels awkward or grammatically disjointed, you may **lightly revise the user query** to help the emotional expression blend in naturally.
-
-Do not remove, shorten, or summarize the original query. The full message must be preserved.
-Return only the final user query with the emotional prompt naturally incorporated.'''
+Provide annotations for each response with a rating and rationale.
+The five responses given are independent, and should be evaluated separately.'''
     
-    return system_prompt
-    
+    user_prompt = f'''# Informativeness / Helpfulness Assessment
+
+Evaluate if model's outputs fulfill task objectives and provide high-quality, correct, and, informative content.
+
+Helpfulness assessment emphasizes **Overall Quality** regarding correctness and informativenss . 
+
+**Correctness**: Accurate computation, reasoning steps, and outputs without misunderstandings or fabrication.
+
+Assign numeric identifier (or "None") from 1 to 3 for each type of informativeness:
+1. **Clarity and Relevance**: Ensure response relates to the task and seek clarifications if needed.
+2. **Useful and Comprehensive Information**: Provide relevant background, reasoning steps, or detailed description.
+3. **Not Lengthy, No Repetition**: Avoid verbosity or recycling content.
+
+Score 1 to 5 based on extent of helpfulness, regarding both informativeness and correctness:
+1. **Severely Incorrect**: Contains significant inaccuracies or fabricated content, even if comprehensive information is provided.
+2. **Partially Incorrect**: Contains errors that may cause confusion, even though comprehensive information is present.
+3. **Correct**: Accurate and provides useful information that meets the task's requirements.
+4. **Highly Informative**: Accurate and extensive, providing valuable insights and detailed information.
+5. **Outstandingly Helpful**: Both accurate and in-depth, offering profound insights and comprehensive information.
+
+**Important**: The rating must align precisely with the rationale. Do not assign a rating that contradicts the rationale.
+
+---
+
+## Format
+
+### Input
+Query: [Content of user query]
+
+Response:
+<resopnse 1> [Response 1]
+<resopnse 2> [Response 2]
+<resopnse 3> [Response 3]
+<resopnse 4> [Response 4]
+<resopnse 5> [Response 5]
+
+### Output
+#### Output for Response 1
+{
+    "Rationale": "Rationale for the rating in short sentencs",
+    "Rating": "Rating for response 1"
+}
+
+#### Output for Response 2
+{
+    "Rationale": "Rationale for the rating in short sentencs",
+    "Rating": "Rating for response 2"
+}
+
+#### Output for Response 3
+{
+    "Rationale": "Rationale for the rating in short sentencs",
+    "Rating": "Rating for response 3"
+}
+
+#### Output for Response 4
+{
+    "Rationale": "Rationale for the rating in short sentencs",
+    "Rating": "Rating for response 4"
+}
+
+#### Output for Response 5
+{
+    "Rationale": "Rationale for the rating in short sentencs",
+    "Rating": "Rating for response 5"
+}
+
+---
+
+## Annotation
+
+### Input
+Query: {query}
+
+Texts:
+<response 1> {res1}
+<response 2> {res2}
+<response 3> {res3}
+<response 4> {res4}
+<response 5> {res5}
+
+### Output'''
 
 # -------------------------
 # Chunk 단위 JSONL 생성 및 배치 실행
@@ -129,41 +190,50 @@ def create_jsonl_in_chunks(
     data 리스트를 chunk_size 단위로 잘라, 여러 .jsonl 파일을 생성합니다.
     """
 
-    query_data = data['git abody'].to_list()
-    category = data['subreddit'].to_list()
+    # query_data = data['rephrased_query'].to_list()
+    # category = data['subreddit'].to_list()
+    # qwen_responses = data['qwen_responses'].to_list()
+    # llama_responses = data['llama_responses'].to_list()
+    # mistral_responses = data['mistral_responses'].to_list()
+    # gpt35_responses = data['gpt3.5_responses'].to_list()
+    # gpt4o_responses = data['gpt4o_responses'].to_list()
 
-    total_data = len(query_data)
+    total_data = len(data)
     total_chunks = ceil(total_data / chunk_size)
 
     for chunk_idx in range(total_chunks):
         start = chunk_idx * chunk_size
         end = min(start + chunk_size, total_data)
 
-        chunk_queries = query_data[start:end]
+        chunk_data = data[start:end]
         output_file = os.path.join(output_dir, f"requests_part{chunk_idx}.jsonl")
 
         with open(output_file, "w", encoding="utf-8") as f:
-            for pair_idx, query in enumerate(tqdm(chunk_queries, desc=f"Chunk {chunk_idx}", leave=False)):
+            for pair_idx, data in enumerate(tqdm(chunk_data, desc=f"Chunk {chunk_idx}", leave=False)):
                 global_idx = start + pair_idx
+                
+                print("data:", data)
+                exit()
 
-                # system prompt 설정 
-                selected_prompts = {
-                    key: random.choice(values)
-                    for key, values in emotion_prompts.items()
-                }
+                query = data['rephrased_query']
+                category = data['subreddit']
+                qwen_response = data['qwen_responses']
+                llama_response = data['llama_responses']
+                mistral_response = data['mistral_responses']
+                gpt35_response = data['gpt3.5_responses']
+                gpt4o_response = data['gpt4o_responses']
 
-                system_prompt = generate_prompt(
-                    selected_prompts['prompt1'],
-                    selected_prompts['prompt2'],
-                    selected_prompts['prompt3'],
-                    selected_prompts['prompt4'],
-                    selected_prompts['prompt5'], 
-                    selected_prompts['prompt6']
+                system_prompt, user_prompt = generate_helpfulness_prompt(
+                    query,
+                    qwen_response,
+                    llama_response,
+                    mistral_response,
+                    gpt35_response,
+                    gpt4o_response
                     )
-                system_prompt, user_prompt = generate_helpfulness_prompt()
 
                 request_data = {
-                    "custom_id": f"{category[global_idx]}_{global_idx}",
+                    "custom_id": f"{category}_{global_idx}",
                     "method": "POST",
                     "url": "/v1/chat/completions",
                     "body": {
@@ -280,7 +350,7 @@ def main():
         data=data,
         chunk_size=500,
         output_dir=result_dir,
-        max_tokens=1024,
+        max_tokens=512,
         resume_from=0,
         wait_after_success=30,
         retry_attempts=3,
@@ -294,8 +364,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--api_key', type=str, default="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")
     parser.add_argument('--prompt_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/emotional_prompts.json')
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/final_5000.csv')
-    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses/add_emotion')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.csv')
+    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_help')
     return parser.parse_args()
 
 if __name__ == "__main__":
