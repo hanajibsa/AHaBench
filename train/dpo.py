@@ -3,7 +3,7 @@ import re
 import json
 import argparse 
 
-# from datasets import load_dataset
+from datasets import Dataset
 from trl import DPOConfig, DPOTrainer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -22,7 +22,9 @@ def main():
     args = parse_args()
 
     with open(args.data_path, 'r', encoding='utf-8') as f:
-        train_dataset = json.load(f)
+        raw_data = json.load(f)
+    
+    train_dataset = Dataset.from_list(raw_data)
     
     model = AutoModelForCausalLM.from_pretrained(
         args.base_model,
@@ -31,6 +33,8 @@ def main():
         )
     
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
     training_args = DPOConfig(
         output_dir=args.output_path,
@@ -40,7 +44,7 @@ def main():
         save_strategy="epoch",
         save_total_limit=3, 
         num_train_epochs=5,
-        evaluation_strategy="no",
+        # evaluation_strategy="no",
         report_to=args.wandb_run_name
         )
     
@@ -58,7 +62,7 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_model', type=str, default='meta-llama/Llama-3.1-8B-Instruct')
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/ranking_result.json')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/preference_data.jsonl')
     parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/outputs/safe_dpo/llama-3.1-8b-instruct')
     parser.add_argument('--wandb_project', type=str, default="AHa-DPO")
     parser.add_argument('--wandb_run_name', type=str, default="trial1")
