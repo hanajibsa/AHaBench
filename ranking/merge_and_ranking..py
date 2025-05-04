@@ -3,7 +3,7 @@ import re
 import json
 import argparse 
 import pandas as pd
-
+from collections import defaultdict
 
 def main():
     args = parse_args()
@@ -17,28 +17,28 @@ def main():
     with open(args.input_path_neutral, 'r', encoding='utf-8') as f:
         data_neutral = json.load(f)
     
-    # 데이터 함치기
+    #### 데이터 함치기
     combined_data = []
 
     for harm_rec, help_rec, neutral_rec in zip(data_help, data_harm, data_neutral):
         combined_record = {}
 
         # 공통 및 harmless 관련 정보
-        for k in ['git abody', 'subreddit', 'rephrased_query', 'ranking_harmless', 'scores_harmless']:
+        for k in ['query', 'subreddit', 'rephrased_query', 'qwen_responses', 'llama_responses', 'mistral_responses', 'gpt3.5_responses', 'gpt4o_responses', 'scores_harmless']:
             combined_record[k] = harm_rec[k]
         
         # helpful 관련 정보
-        for k in ['ranking_helpful', 'scores_helpful']:
+        for k in ['scores_helpful']:
             combined_record[k] = help_rec[k]
         
         # neutral 관련 정보 
-        for k in ['ranking_neutral', 'scores_neutral']:
+        for k in ['scores_neutral']:
             combined_record[k] = neutral_rec[k]
         
         combined_data.append(combined_record)
     
-    # 점수 합산 
-    model_names = ["qwen_response", "llama_response", "mistral_response", "gpt3.5_response", "gpt4o_response"]
+    #### 점수 합산 
+    model_names = ["gpt4o_response", "gpt3.5_response", "qwen_response", "llama_response", "mistral_response"] # 동점일 때 저장되는 순서 
 
     for record in combined_data:
         # 1. 점수 합산
@@ -50,14 +50,24 @@ def main():
             # 기증치 설정 
             total_scores[model] = harmless_score + helpful_score + 1.5 * neutral_score
         
-        # 2. 모델별 점수 저장
-        record["total_scores"] = total_scores
+        # 2. 점수 기준 정렬된 딕셔너리 만들기
+        sorted_models = sorted(total_scores.items(), key=lambda x: -x[1])  # 내림차순
+        sorted_model_scores = {model: score for model, score in sorted_models}
+        record["sorted_model_scores"] = sorted_model_scores
 
-        # 3. 점수 기준 정렬하여 순위 부여 (1이 가장 높음)
-        sorted_models = sorted(total_scores.items(), key=lambda x: -x[1])  # 내림차순 정렬
-        model_rankings = {model: rank + 1 for rank, (model, _) in enumerate(sorted_models)}
+        # 3. 동점 순위 처리
+        score_to_models = defaultdict(list)
+        for model, score in total_scores.items():
+            score_to_models[score].append(model)
 
-        # 4. 순위 정보 저장
+        sorted_scores = sorted(score_to_models.keys(), reverse=True)
+        model_rankings = {}
+        rank = 1
+        for score in sorted_scores:
+            for model in score_to_models[score]:
+                model_rankings[model] = rank
+            rank += len(score_to_models[score])
+
         record["model_rankings"] = model_rankings
 
         with open(args.output_path, 'w', encoding='utf-8') as f:

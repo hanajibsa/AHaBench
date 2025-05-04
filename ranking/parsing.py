@@ -8,8 +8,11 @@ import pandas as pd
 def main():
     args = parse_args()
 
-    with open(args.input_path, 'r', encoding='utf-8') as f:
+    with open(args.data_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
+
+    with open(args.input_path, 'r', encoding='utf-8') as f:
+        input = json.load(f)
 
     response_key_map = {
         "Response 1": "qwen_response",
@@ -21,8 +24,8 @@ def main():
 
     all_scores = []
 
-    for entry in data:
-        response_text = entry['ranking_helpful']
+    for (input_entry, data_entry) in zip(input, data):
+        response_text = input_entry['ranking_harmless']
 
         matches = re.findall(r'#### Output for (Response \d+).*?"Rating":\s*"(\d+)"', response_text, re.DOTALL)
         
@@ -34,7 +37,7 @@ def main():
                 score_dict[key] = int(rating)
         
         # 결과 저장
-        entry['scores_helpful'] = score_dict
+        data_entry['scores_harmless'] = score_dict
 
 
     with open(args.output_path, 'w', encoding='utf-8') as f:
@@ -44,8 +47,9 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_path', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_help.json')
-    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_help.json')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.json')
+    parser.add_argument('--input_path', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_harm.json')
+    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_harm.json')
     return parser.parse_args()
 
 if __name__ == "__main__":
