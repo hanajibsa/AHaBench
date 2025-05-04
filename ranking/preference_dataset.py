@@ -39,14 +39,14 @@ def main():
         })
 
     with open(args.output_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+        json.dump(dpo_samples, f, ensure_ascii=False, indent=4)
     print(f"✅ 전체 저장 완료: {args.output_path}")
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/ranking_result.json')
-    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/preference_data')
+    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/preference_data.json')
     return parser.parse_args()
 
 if __name__ == "__main__":

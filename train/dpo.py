@@ -7,23 +7,62 @@ import argparse
 from trl import DPOConfig, DPOTrainer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+
+"""
+CUDA_VISIBLE_DEVICES=1,3 accelerate launch \
+  --multi_gpu \
+  train/dpo.py \
+  --input_path data/train.json \
+  --base_model meta-llama/Llama-3.1-8B-Instruct \
+  --output_path ./dpo_output
+  --hug_token huggingface_token
+"""
+
 def main():
     args = parse_args()
 
-    with open(args.input_path, 'r', encoding='utf-8') as f:
+    with open(args.data_path, 'r', encoding='utf-8') as f:
         train_dataset = json.load(f)
     
-    model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
+    model = AutoModelForCausalLM.from_pretrained(
+        args.base_model,
+        token = args.hug_token,
+        trust_remote_code=True 
+        )
+    
+    tokenizer = AutoTokenizer.from_pretrained(args.base_model)
 
-    training_args = DPOConfig(output_dir=args.output_path, logging_steps=10)
-    trainer = DPOTrainer(model=model, args=training_args, processing_class=tokenizer, train_dataset=train_dataset)
+    training_args = DPOConfig(
+        output_dir=args.output_path,
+        per_device_train_batch_size=8,
+        gradient_accumulation_steps=8,
+        logging_steps=10,
+        save_strategy="epoch",
+        save_total_limit=3, 
+        num_train_epochs=5,
+        evaluation_strategy="no",
+        report_to=args.wandb_run_name
+        )
+    
+    os.environ["WANDB_PROJECT"] = args.wandb_project
+
+    trainer = DPOTrainer(
+        model=model,
+        args=training_args,
+        processing_class=tokenizer,
+        train_dataset=train_dataset
+    )
+
     trainer.train()
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--base_model', type=str, default='meta-llama/Llama-3.1-8B-Instruct')
     parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/ranking_result.json')
     parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/outputs/safe_dpo/llama-3.1-8b-instruct')
+    parser.add_argument('--wandb_project', type=str, default="AHa-DPO")
+    parser.add_argument('--wandb_run_name', type=str, default="trial1")
+    parser.add_argument('--hug_token', type=str)
     return parser.parse_args()
 
 if __name__ == "__main__":
