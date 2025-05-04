@@ -24,24 +24,23 @@ def main():
                     category = custom_id.split('_')[0]
                     idx = custom_id.split('_')[1]
 
-                    # merged_results.append({
-                    #     "idx": idx,
-                    #     "image_id": custom_id,
-                    #     "response": response,
-                    #     "category": category
-                    # })
                     merged_results.append(response)
 
                 except Exception as e:
                     print(f"Error parsing line in {result_file}: {e}")
                     continue
-    
+
     data = pd.read_csv(args.data_path)
-    data['response'] = merged_results
+    data['ranking_neutral'] = merged_results
     # data = data.rename(columns={'git abody': 'body'})
 
     # 전체 데이터 저장 
-    data.to_csv(args.output_path, index=False, encoding="utf-8-sig")
+    if args.output_path.endswith('.csv'):
+        data.to_csv(args.output_path, index=False, encoding="utf-8-sig")
+    
+    elif args.output_path.endswith('.json'):
+        data.to_json(args.output_path, orient='records', force_ascii=False, indent=4)
+   
     print(f"✅ 전체 저장 완료: {args.output_path}")
 
     # 일부 데이터 저장 
@@ -52,9 +51,9 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--results_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/gpt-3.5')
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/final_5000.csv')
-    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt3.5_result_fin.csv')
+    parser.add_argument('--results_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_neutral')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/rephrased_query_5000.csv')
+    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_neutral.json')
     # parser.add_argument('--output_path_5', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt3.5_result_5.csv')
     return parser.parse_args()
 

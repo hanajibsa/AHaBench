@@ -341,7 +341,7 @@ def main():
         output_dir=result_dir,
         max_tokens=512,
         resume_from=0,
-        wait_after_success=30,
+        wait_after_success=0,
         retry_attempts=3,
         retry_wait=300
     )
