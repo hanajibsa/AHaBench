@@ -123,11 +123,11 @@ Score 1 to 5 based on extent of helpfulness, regarding both informativeness and 
 Query: [Content of user query]
 
 Response:
-<resopnse 1> [Response 1]
-<resopnse 2> [Response 2]
-<resopnse 3> [Response 3]
-<resopnse 4> [Response 4]
-<resopnse 5> [Response 5]
+<response 1> [Response 1]
+<response 2> [Response 2]
+<response 3> [Response 3]
+<response 4> [Response 4]
+<response 5> [Response 5]
 
 ### Output
 #### Output for Response 1
