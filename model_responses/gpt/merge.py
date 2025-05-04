@@ -31,6 +31,7 @@ def main():
                     continue
 
     data = pd.read_csv(args.data_path)
+    print(len(merged_results))
     data['ranking_neutral'] = merged_results
     # data = data.rename(columns={'git abody': 'body'})
 
