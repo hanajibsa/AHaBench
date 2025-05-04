@@ -162,3 +162,10 @@ cython_debug/
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_harm.json
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_help.json
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_neutral.json
+
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt3.5_result_fin.csv
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/gpt4o_result_fin.csv
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/llama_result_fin.csv
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.csv
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/mistral_result_fin.csv
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/qwen_result_fin.csv
