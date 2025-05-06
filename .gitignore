@@ -169,3 +169,5 @@ cython_debug/
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.csv
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/mistral_result_fin.csv
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/qwen_result_fin.csv
+
+/home/data3/users/jiwon/workspace/safe-chatbot/wandb

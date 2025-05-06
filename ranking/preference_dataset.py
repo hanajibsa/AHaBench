@@ -20,15 +20,24 @@ def main():
     
     dpo_samples = []
 
-    for record in data:
+    for i, record in enumerate(data):
         query = record['rephrased_query']
         sorted_scores = record["sorted_model_scores"]
 
-        best_model, best_score = next(iter(sorted_scores.items()))
-        worst_model, worst_score = next(reversed(sorted_scores.items()))
+        sorted_models = list(sorted_scores.items())  # [('gpt3.5_response', 16.5), ..., ('mistral_response', 13.0)]
+
+        best_model, best_score = sorted_models[0]
+        worst_model, worst_score = sorted_models[-1]
 
         chosen = record[model_response_keys[best_model]]
         rejected = record[model_response_keys[worst_model]]
+
+        if rejected is None or (isinstance(rejected, str) and not rejected.strip()):
+            print(f'[{i}] 빈 rejected 응답 발견: {worst_model} -> 바로 위 랭킹 응답 사용')
+            if len(sorted_models) >= 2:
+                second_worst_model, second_worst_score = sorted_models[-2]
+                rejected = record[model_response_keys[second_worst_model]]
+                worst_model, worst_score = second_worst_model, second_worst_score
 
         dpo_samples.append({
             "prompt": query,
