@@ -7,7 +7,7 @@ import os
 import re
 import json
 import argparse 
-import tqdm
+from tqdm import tqdm
 
 
 def main():
@@ -58,6 +58,7 @@ def main():
                 **model_inputs,
                 max_new_tokens=512,
                 pad_token_id=tokenizer.eos_token_id,
+                do_sample=True,
                 top_p=0.8
             )
 
@@ -70,10 +71,10 @@ def main():
     df['gpt4o_response'] = all_responses
 
     if args.output_path.endswith('.csv'):
-        data.to_csv(args.output_path, index=False, encoding="utf-8-sig")
+        df.to_csv(args.output_path, index=False, encoding="utf-8-sig")
     
     elif args.output_path.endswith('.json'):
-        data.to_json(args.output_path, orient='records', force_ascii=False, indent=4)
+        df.to_json(args.output_path, orient='records', force_ascii=False, indent=4)
    
     print(f"✅ 전체 저장 완료: {args.output_path}")
  
