@@ -88,32 +88,26 @@ def wait_for_batch_completion(client, batch_id, check_interval=30):
 
 def generate_helpfulness_prompt(query, res1, res2, res3, res4, res5):
     system_prompt = '''You are a helpful assistant that evaluates text quality based on given criteria.
-You'll receive an user query ("Query") and five resopnses outputs ("Response").
+You'll receive an user query ("Query") and five resopnse outputs ("Response").
 Understand and interpret queries and responses to evaluate effectively.
 Provide annotations for each response with a rating and rationale.
 The five responses given are independent, and should be evaluated separately.'''
     
     user_prompt = f'''# Informativeness / Helpfulness Assessment
+Evaluate whether the model response effectively fulfills the task goal by providing accurate, relevant, and useful information that supports user understanding or decision-making.
 
-Evaluate if model's outputs fulfill task objectives and provide high-quality, correct, and, informative content.
-
-Helpfulness assessment emphasizes **Overall Quality** regarding correctness and informativenss . 
-
-**Correctness**: Accurate computation, reasoning steps, and outputs without misunderstandings or fabrication.
-
-Assign numeric identifier (or "None") from 1 to 3 for each type of informativeness:
-1. **Clarity and Relevance**: Ensure response relates to the task and seek clarifications if needed.
-2. **Useful and Comprehensive Information**: Provide relevant background, reasoning steps, or detailed description.
-3. **Not Lengthy, No Repetition**: Avoid verbosity or recycling content.
+**Evaluation Criteria**
+- **Correctness**: The response should be factually accurate, logically consistent, and free of errors.
+- **Informative Contribution**: The response must clearly address the query, provide helpful explanation or context, and avoid unnecessary repetition or vagueness.
 
 Score 1 to 5 based on extent of helpfulness, regarding both informativeness and correctness:
-1. **Severely Incorrect**: Contains significant inaccuracies or fabricated content, even if comprehensive information is provided.
-2. **Partially Incorrect**: Contains errors that may cause confusion, even though comprehensive information is present.
-3. **Correct**: Accurate and provides useful information that meets the task's requirements.
-4. **Highly Informative**: Accurate and extensive, providing valuable insights and detailed information.
-5. **Outstandingly Helpful**: Both accurate and in-depth, offering profound insights and comprehensive information.
+1. **Misleading** – The response fails to meet basic expectations. It contains major factual errors, misinterprets the query, or offers irrelevant or misleading information. It does not support user understanding.
+2. **Partially Helpful** – The response shows some relevant or correct content, but includes significant gaps, confusing or inconsistent reasoning, or notable inaccuracies that significantly reduce its usefulness.
+3. **Minimally Adequate** – The response avoids major errors and is partially relevant, but contains minor inaccuracies, vague phrasing, or superficial reasoning. It satisfies the task at a basic level but lacks depth or clarity.
+4. **Mostly Helpful** – The response is largely accurate and relevant, clearly addresses the query, and provides useful support. Minor issues in clarity, completeness, or specificity may be present, but they do not significantly hinder the user's understanding.
+5. **Fully Helpful** – The response is entirely accurate, well-organized, and directly fulfills the task. It is clear, complete, and well-targeted to the user’s query, with no notable flaws in correctness or informativeness.
 
-**Important**: The rating must align precisely with the rationale. Do not assign a rating that contradicts the rationale.
+**Important**: Return a score from 1 to 5 along with a brief justification that directly corresponds to the scoring criteria. Do not assign a score that contradicts your explanation.
 
 ---
 
@@ -214,11 +208,11 @@ def create_jsonl_in_chunks(
 
                 query = row['rephrased_query']
                 category = row['subreddit']
-                qwen_response = row['qwen_responses']
-                llama_response = row['llama_responses']
-                mistral_response = row['mistral_responses']
-                gpt35_response = row['gpt3.5_responses']
-                gpt4o_response = row['gpt4o_responses']
+                qwen_response = row['qwen_response']
+                llama_response = row['llama_response']
+                mistral_response = row['mistral_response']
+                gpt35_response = row['gpt3.5_response']
+                gpt4o_response = row['gpt4o_response']
 
                 system_prompt, user_prompt = generate_helpfulness_prompt(
                     query,
@@ -240,7 +234,7 @@ def create_jsonl_in_chunks(
                             {"role": "user","content": user_prompt}
                         ],
                         "max_tokens": max_tokens,
-                        "top_p": 0.6
+                        "temperature": 0.0
                     }
                 }
                 f.write(json.dumps(request_data, ensure_ascii=False) + "\n")
@@ -356,8 +350,8 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--api_key', type=str, default="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")
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/merged_responses.json')
-    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/ranking_help')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses_fin/result5000_merged.json')
+    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/ranking_help')
     return parser.parse_args()
 
 if __name__ == "__main__":

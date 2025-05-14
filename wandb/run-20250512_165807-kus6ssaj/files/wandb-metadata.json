@@ -1,0 +1,28 @@
+{
+  "os": "Linux-5.4.0-212-generic-x86_64-with-glibc2.31",
+  "python": "CPython 3.10.16",
+  "startedAt": "2025-05-12T16:58:07.162793Z",
+  "args": [
+    "--data_path",
+    "data/train.json",
+    "--base_model",
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "--output_path",
+    "/home/data3/users/jiwon/outputs/safe_real_fin/llama-3.1",
+    "--wandb_run_name",
+    "llama-3.1",
+    "--hug_token",
+    "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"
+  ],
+  "program": "/home/data3/users/jiwon/workspace/safe-chatbot/train/dpo.py",
+  "codePath": "train/dpo.py",
+  "git": {
+    "remote": "https://github.com/hanajibsa/safe-chatbot.git",
+    "commit": "65581019efb9ab45463123523c834ccde1b90667"
+  },
+  "email": "hanajibsa@yonsei.ac.kr",
+  "root": "/home/data3/users/jiwon/workspace/safe-chatbot",
+  "host": "jiwon",
+  "executable": "/root/miniconda3/envs/aha/bin/python3.10",
+  "codePathLocal": "train/dpo.py"
+}

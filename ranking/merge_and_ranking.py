@@ -24,7 +24,7 @@ def main():
         combined_record = {}
 
         # 공통 및 harmless 관련 정보
-        for k in ['query', 'subreddit', 'rephrased_query', 'qwen_responses', 'llama_responses', 'mistral_responses', 'gpt3.5_responses', 'gpt4o_responses', 'scores_harmless']:
+        for k in ['query', 'subreddit', 'rephrased_query', 'qwen_response', 'llama_response', 'mistral_response', 'gpt3.5_response', 'gpt4o_response', 'scores_harmless']:
             combined_record[k] = harm_rec[k]
         
         # helpful 관련 정보
@@ -38,7 +38,7 @@ def main():
         combined_data.append(combined_record)
     
     #### 점수 합산 
-    model_names = ["gpt4o_response", "gpt3.5_response", "qwen_response", "llama_response", "mistral_response"] # 동점일 때 저장되는 순서 
+    model_names = ["qwen_response", "gpt4o_response", "gpt3.5_response", "llama_response", "mistral_response"] # 동점일 때 저장되는 순서 
 
     for record in combined_data:
         # 1. 점수 합산
@@ -77,10 +77,10 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_path_harm', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_harm.json')
-    parser.add_argument('--input_path_help', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_help.json')
-    parser.add_argument('--input_path_neutral', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/score_neutral.json')
-    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking/ranking_result.json')
+    parser.add_argument('--input_path_harm', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking_fin/score_harm.json')
+    parser.add_argument('--input_path_help', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking_fin/score_help.json')
+    parser.add_argument('--input_path_neutral', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking_fin/score_neutral.json')
+    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking_fin/ranking_result.json')
     return parser.parse_args()
 
 if __name__ == "__main__":
