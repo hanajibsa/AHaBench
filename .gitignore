@@ -171,3 +171,7 @@ cython_debug/
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses/qwen_result_fin.csv
 
 /home/data3/users/jiwon/workspace/safe-chatbot/wandb
+
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses
+/home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses_fin
