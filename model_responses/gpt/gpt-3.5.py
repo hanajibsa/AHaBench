@@ -118,7 +118,6 @@ def wait_for_batch_completion(client, batch_id, check_interval=30):
 # Chunk 단위 JSONL 생성 및 배치 실행
 # -------------------------
 def create_jsonl_in_chunks(
-    system_prompts,
     data, 
     output_dir,
     chunk_size,
@@ -128,35 +127,36 @@ def create_jsonl_in_chunks(
     data 리스트를 chunk_size 단위로 잘라, 여러 .jsonl 파일을 생성합니다.
     """
 
-    query_data = data['rephrased_query'].to_list()
-    category = data['subreddit'].to_list()
+    # query_data = data['rephrased_query'].to_list()
+    # category = data['subreddit'].to_list()
 
-    assert len(system_prompts) == len(query_data) == len(category), "system_prompts와 query_data, category 길이가 일치해야 합니다."
-    total_data = len(system_prompts)
+    # assert len(query_data) == len(system_prompts) == len(custom_id), "system_prompts와 query_data, category 길이가 일치해야 합니다."
+    total_data = len(data)
     total_chunks = ceil(total_data / chunk_size)
 
     for chunk_idx in range(total_chunks):
         start = chunk_idx * chunk_size
         end = min(start + chunk_size, total_data)
 
-        chunk_system_prompts = system_prompts[start:end]
-        chunk_queries = query_data[start:end]
-        assert len(chunk_system_prompts) == len(chunk_queries), "system_prompts와 query_data 청크 길이가 일치해야 합니다."
+        chunk_data = data[start:end]
 
         output_file = os.path.join(output_dir, f"requests_part{chunk_idx}.jsonl")
 
         with open(output_file, "w", encoding="utf-8") as f:
-            for pair_idx, (system_prompt, query) in enumerate(tqdm(zip(chunk_system_prompts, chunk_queries), desc=f"Chunk {chunk_idx}", leave=False)):
+            for pair_idx, record in enumerate(tqdm(chunk_data, desc=f"Chunk {chunk_idx}", leave=False)):
                 global_idx = start + pair_idx
 
+                category = record['subreddit']
+                query = record['query']
+
                 request_data = {
-                    "custom_id": f"{category[global_idx]}_{global_idx}",
+                    "custom_id": f"{category}_{global_idx}",
                     "method": "POST",
                     "url": "/v1/chat/completions",
                     "body": {
                         "model": "gpt-3.5-turbo-0125",
                         "messages": [
-                            {"role": "system", "content": system_prompt},
+                            {"role": "system", "content": 'Please respond in fluent English using a natural, conversational paragraph style. Do not use bullet points or numbered lists. Each response should consist of exactly 10 full sentences.'},
                             {"role": "user","content": query}
                         ],
                         "max_tokens": max_tokens
@@ -168,7 +168,7 @@ def create_jsonl_in_chunks(
     
     print("✅ 모든 JSONL Chunks 생성 완료!")
 
-def process_in_chunks(client, system_prompts, data, chunk_size, output_dir, max_tokens, resume_from, wait_after_success, retry_attempts, retry_wait):
+def process_in_chunks(client, data, chunk_size, output_dir, max_tokens, resume_from, wait_after_success, retry_attempts, retry_wait):
     """
     1) JSONL을 chunk_size 단위로 생성
     2) 각 JSONL 파일에 대해 배치를 순차 실행
@@ -178,7 +178,7 @@ def process_in_chunks(client, system_prompts, data, chunk_size, output_dir, max_
     
     # 1) Chunk별 JSONL 생성
     os.makedirs(output_dir, exist_ok=True)
-    create_jsonl_in_chunks(system_prompts, data, output_dir, chunk_size, max_tokens)
+    create_jsonl_in_chunks(data, output_dir, chunk_size, max_tokens)
 
     # 2) 생성된 JSONL 목록
     jsonl_files = list_jsonl_files_numeric_sort(output_dir, prefix="requests_part")
@@ -247,25 +247,20 @@ def main():
     client = OpenAI(api_key=args.api_key)
 
     # 2) 경로 설정 
-    prompt_path = args.prompt_path
     data_path = args.data_path
     result_dir = args.result_dir
 
     # 3) 데이터 설정 
-    with open(prompt_path, 'r') as f:
-        system_prompts = json.load(f)
-
-    data = pd.read_csv(data_path)
+    with open(data_path, 'r') as f:
+        data = json.load(f)
     
-    assert len(system_prompts)==len(data), "system_prompts와 data 길이가 일치해야 합니다."
-    print('=== 전체 데이터 개수: ', len(system_prompts))
+    print('=== 전체 데이터 개수: ', len(data))
 
     # 4) chunk 단위로 실행 
     result_paths = process_in_chunks(
         client=client,
-        system_prompts=system_prompts,
         data=data,
-        chunk_size=250,
+        chunk_size=500,
         output_dir=result_dir,
         max_tokens=512,
         resume_from=0,
@@ -280,9 +275,8 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser(description="Run GPT-4o batch inference for image pairs.")
     parser.add_argument('--api_key', type=str, default="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")
-    parser.add_argument('--prompt_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/system_prompts_5000.json')
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/rephrased_query_5000.csv')
-    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_responses_fin/gpt-3.5')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/query_5000_fin.json')
+    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/query-5000/gpt-3.5')
     return parser.parse_args()
 
 if __name__ == "__main__":
