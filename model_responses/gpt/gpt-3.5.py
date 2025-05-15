@@ -146,7 +146,7 @@ def create_jsonl_in_chunks(
             for pair_idx, record in enumerate(tqdm(chunk_data, desc=f"Chunk {chunk_idx}", leave=False)):
                 global_idx = start + pair_idx
 
-                category = record['subreddit']
+                category = record['type']
                 query = record['query']
 
                 request_data = {
