@@ -10,21 +10,21 @@ import argparse
 from tqdm import tqdm
 
 '''
-CUDA_VISIBLE_DEVICES=1 python model_responses/opensource/trained_model.py \
---peft_model_path /home/data3/users/jiwon/outputs/safe_real_fin/sft_dpo/llama-3.1/checkpoint-1250 \
---output_path /home/data3/users/jiwon/outputs/safe_real_fin/sft_dpo/query_500_sft_dpo_llama_epoch2.json 
+CUDA_VISIBLE_DEVICES=2 python model_responses/opensource/trained_model.py \
+--peft_model_path /home/data3/users/jiwon/outputs/safe_real_fin/dpo/llama-3.1/checkpoint-3750 \
+--output_path /home/data3/users/jiwon/outputs/safe_real_fin/dpo/query_500_dpo_llama_epoch3.json 
 '''
 
 '''
-CUDA_VISIBLE_DEVICES=4 python model_responses/opensource/trained_model.py \
---peft_model_path /home/data3/users/jiwon/outputs/safe_real_fin/sft_dpo/qwen-2.5/checkpoint-1250 \
---output_path /home/data3/users/jiwon/outputs/safe_real_fin/sft_dpo/query_500_sft_dpo_qwen_epoch2.json 
+CUDA_VISIBLE_DEVICES=6 python model_responses/opensource/trained_model.py \
+--peft_model_path /home/data3/users/jiwon/outputs/safe_real_fin/dpo/qwen-2.5/checkpoint-3750 \
+--output_path /home/data3/users/jiwon/outputs/safe_real_fin/dpo/query_500_dpo_qwen_epoch3.json 
 '''
 
 '''
 CUDA_VISIBLE_DEVICES=7 python model_responses/opensource/trained_model.py \
---peft_model_path /home/data3/users/jiwon/outputs/safe_real_fin/sft_dpo/mistral/checkpoint-1250 \
---output_path /home/data3/users/jiwon/outputs/safe_real_fin/sft_dpo/query_500_sft_dpo_mistral_epoch2.json 
+--peft_model_path /home/data3/users/jiwon/outputs/safe_real_fin/dpo/mistral/checkpoint-3750 \
+--output_path /home/data3/users/jiwon/outputs/safe_real_fin/dpo/query_500_dpo_mistral_epoch3.json 
 '''
 
 def main():
@@ -107,7 +107,7 @@ def parse_args():
     parser.add_argument('--peft_model_path', type=str, default='outputs/dpo-run-001')
     parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/query_500_fin.csv')
     parser.add_argument('--output_path', type=str, default='')
-    parser.add_argument('--device', type=str, default='')
+    # parser.add_argument('--device', type=str, default='')
     return parser.parse_args()
 
 if __name__ == "__main__":

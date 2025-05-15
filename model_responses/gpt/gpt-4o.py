@@ -146,7 +146,7 @@ def create_jsonl_in_chunks(
             for pair_idx, record in enumerate(tqdm(chunk_data, desc=f"Chunk {chunk_idx}", leave=False)):
                 global_idx = start + pair_idx
 
-                category = record['subreddit']
+                category = record['type']
                 query = record['query']
 
                 request_data = {
@@ -156,7 +156,7 @@ def create_jsonl_in_chunks(
                     "body": {
                         "model": "gpt-4o",
                         "messages": [
-                            {"role": "system", "content": 'Please respond in fluent English using a natural, conversational paragraph style. Do not use bullet points or numbered lists. Each response should consist of exactly 10 full sentences.'},
+                            {"role": "system", "content": 'Please respond in fluent English using a natural, conversational paragraph style. Do not use bullet points or numbered lists. Each response should consist of exactly 15 full sentences.'},
                             {"role": "user","content": query}
                         ],
                         "max_tokens": max_tokens
@@ -260,9 +260,9 @@ def main():
     result_paths = process_in_chunks(
         client=client,
         data=data,
-        chunk_size=500,
+        chunk_size=50,
         output_dir=result_dir,
-        max_tokens=512,
+        max_tokens=1024,
         resume_from=0,
         wait_after_success=60,
         retry_attempts=3,
@@ -275,8 +275,8 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser(description="Run GPT-4o batch inference for image pairs.")
     parser.add_argument('--api_key', type=str, default="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")
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/query_5000_fin.json')
-    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/query-5000/gpt-4o')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o_test.json')
+    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt4o-test')
     return parser.parse_args()
 
 if __name__ == "__main__":

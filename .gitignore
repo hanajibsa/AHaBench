@@ -175,3 +175,13 @@ cython_debug/
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/ranking
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses
 /home/data3/users/jiwon/workspace/safe-chatbot/outputs/responses_fin
+
+/home/data3/users/jiwon/workspace/safe-chatbot/eval/MMLU
+
+/home/data3/users/jiwon/workspace/safe-chatbot/eval/chain-of-thought-hub
+
+/home/data3/users/jiwon/workspace/safe-chatbot/eval
+/home/data3/users/jiwon/workspace/safe-chatbot/query500_test_gemini-2.0-flash.csv
+/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o_test.csv
+/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o_test.json
+/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o.json
