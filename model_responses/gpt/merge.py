@@ -34,10 +34,14 @@ def main():
         data = json.load(f)
     assert len(data)==len(merged_results1), '길이가 일치하지 않음'
 
-    data['response'] = merged_results1
+    for i, d in enumerate(data):
+        d['response'] = merged_results1[i]
 
+    # with open(args.output_path, 'w', encoding='utf-8') as f:
+    #     json.dump(data, f, ensure_ascii=False, indent=4)
     # 전체 데이터 저장 
     if args.output_path.endswith('.csv'):
+        data = pd.DataFrame(data)
         data.to_csv(args.output_path, index=False, encoding="utf-8-sig")
     
     elif args.output_path.endswith('.json'):
@@ -48,8 +52,8 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o_test.json')
-    parser.add_argument('--results_dir1', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt4o-test')
-    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt4o-test/query_500_gpt4o_test.json')
+    parser.add_argument('--results_dir1', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt3.5-test')
+    parser.add_argument('--output_path', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt3.5-test/query_500_gpt4o_test.csv')
     return parser.parse_args()
 
 if __name__ == "__main__":

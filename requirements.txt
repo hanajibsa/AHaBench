@@ -1,0 +1,14 @@
+torch
+accelerate==1.6.0
+huggingface-hub==0.30.2
+numpy
+openai
+pandas
+peft==0.15.2
+sentencepiece==0.2.0
+tokenizers==0.21.1
+tqdm
+transformers==4.51.3
+triton==3.3.0
+trl==0.17.0
+wandb

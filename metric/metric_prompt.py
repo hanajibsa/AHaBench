@@ -62,8 +62,8 @@ Rating: [Rating for LLM Response to Evaluate]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()  # 매번 수정
-    parser.add_argument('--response', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/query500_test_gemini-2.0-flash.csv', help='response file containing queries, and model responses')
-    parser.add_argument('--evaluation', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt3.5-500/query500_test_gemini-2.0-flash_eval.json', help='Evaluation results to be saved')
+    parser.add_argument('--response', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o_test_fin.csv', help='response file containing queries, and model responses')
+    parser.add_argument('--evaluation', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt3.5-500/query500_test_gpt4o_fin_eval.json', help='Evaluation results to be saved')
     parser.add_argument('--api-key', type=str, default='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')
     parser.add_argument('--gpt-model', type=str, default='gpt-4o')
     args = parser.parse_args()
@@ -72,7 +72,8 @@ if __name__ == '__main__':
 
     client = OpenAI(api_key=args.api_key)
 
-    records = pd.read_csv(args.response)
+    records = pd.read_csv(args.response, encoding='utf-8-sig')
+    # records = pd.read_excel('/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o_test_yejin.xls')
 
     # ask GPT-4 to evaluate
     responses = []

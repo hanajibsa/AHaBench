@@ -260,7 +260,7 @@ def main():
     result_paths = process_in_chunks(
         client=client,
         data=data,
-        chunk_size=500,
+        chunk_size=50,
         output_dir=result_dir,
         max_tokens=512,
         resume_from=0,
@@ -275,8 +275,8 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser(description="Run GPT-4o batch inference for image pairs.")
     parser.add_argument('--api_key', type=str, default="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")
-    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/data/query_5000_fin.json')
-    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/query-5000/gpt-3.5')
+    parser.add_argument('--data_path', type=str, default='/home/data3/users/jiwon/workspace/safe-chatbot/query500_gpt4o_test.json')
+    parser.add_argument('--result_dir', type=str, default='/home/data3/users/jiwon/outputs/safe_real_fin/gpt3.5-test')
     return parser.parse_args()
 
 if __name__ == "__main__":
